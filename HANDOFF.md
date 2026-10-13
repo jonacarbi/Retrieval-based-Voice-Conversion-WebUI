@@ -36,8 +36,8 @@ _Entry points, important modules, config, secrets location (not values)._
 - **Project:** `Retrieval-based-Voice-Conversion-WebUI`
 - **Branch:** `main`
 - **Last updated:** 2026-10-13 17:31:51 -03
-- **Built on commit:** a09f70a — fix(train): use buffer_rgba for matplotlib 3.8+ plots (Jonathan Carbiere, 2026-10-13)
-- **README says:** <div align="center">
+- **Built on commit:** f2731ed — feat(train): support MPS and CPU training devices (Jonathan Carbiere, 2026-10-13)
+- **README says:** > Standalone copy of [RVC-Project/Retrieval-based-Voice-Conversion-WebUI](https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI) with my own changes. Original license and history retained.
 
 ## How to build / run / test
 
@@ -107,10 +107,11 @@ _Entry points, important modules, config, secrets location (not values)._
 
 ## Changes in this commit
 
-- M	infer/modules/train/train.py
+- M	README.md
 
 ## Recent history
 
+- f2731ed feat(train): support MPS and CPU training devices _(Jonathan Carbiere, 2026-10-13)_
 - a09f70a fix(train): use buffer_rgba for matplotlib 3.8+ plots _(Jonathan Carbiere, 2026-10-13)_
 - 7ef1986 Add warnings for files related to Onnx exports (#2385) _(Ναρουσέ·μ·γιουμεμί·Χινακάννα, 2024-11-24)_
 - 709bbba optimize nsf inference (#2387) _(yxlllc, 2024-11-24)_
@@ -120,6 +121,5 @@ _Entry points, important modules, config, secrets location (not values)._
 - 1963b7d Update requirements-win-for-realtime_vc_gui-dml.txt _(RVC-Boss, 2024-09-05)_
 - e954fa9 Update requirements-win-for-realtime_vc_gui.txt _(RVC-Boss, 2024-09-05)_
 - cfc1e24 fix: dlmodels.sh exits after download single file (#2175) _(Coming, 2024-08-28)_
-- b405aed Translate Chinese text in English README (#2172) _(Dafterfly, 2024-08-28)_
 
 <!-- HANDOFF:AUTO:END -->

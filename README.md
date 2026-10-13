@@ -1,3 +1,5 @@
+> Standalone copy of [RVC-Project/Retrieval-based-Voice-Conversion-WebUI](https://github.com/RVC-Project/Retrieval-based-Voice-Conversion-WebUI) with my own changes. Original license and history retained.
+
 <div align="center">
 
 <h1>Retrieval-based-Voice-Conversion-WebUI</h1>
