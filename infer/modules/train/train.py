@@ -318,7 +318,18 @@ def run(rank, n_gpus, hps, logger: logging.Logger):
 
 
 def train_and_evaluate(
-    rank, device, epoch, hps, nets, optims, schedulers, scaler, loaders, logger, writers, cache
+    rank,
+    device,
+    epoch,
+    hps,
+    nets,
+    optims,
+    schedulers,
+    scaler,
+    loaders,
+    logger,
+    writers,
+    cache,
 ):
     net_g, net_d = nets
     optim_g, optim_d = optims
