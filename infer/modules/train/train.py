@@ -79,6 +79,26 @@ from infer.lib.train.process_ckpt import savee
 global_step = 0
 
 
+def get_train_device(rank):
+    forced_device = os.environ.get("RVC_TRAIN_DEVICE")
+    if forced_device:
+        return torch.device(forced_device)
+    if torch.cuda.is_available():
+        return torch.device(f"cuda:{rank}")
+    if torch.backends.mps.is_available():
+        return torch.device("mps")
+    return torch.device("cpu")
+
+
+def move_batch_to_device(batch, device):
+    if device.type == "cpu":
+        return batch
+    return tuple(
+        item.to(device, non_blocking=True) if torch.is_tensor(item) else item
+        for item in batch
+    )
+
+
 class EpochRecorder:
     def __init__(self):
         self.last_time = ttime()
@@ -119,8 +139,10 @@ def main():
 
 def run(rank, n_gpus, hps, logger: logging.Logger):
     global global_step
+    device = get_train_device(rank)
     if rank == 0:
         # logger = utils.get_logger(hps.model_dir)
+        logger.info("Training device: %s", device)
         logger.info(hps)
         # utils.check_git_hash(hps.model_dir)
         writer = SummaryWriter(log_dir=hps.model_dir)
@@ -177,11 +199,9 @@ def run(rank, n_gpus, hps, logger: logging.Logger):
             **hps.model,
             is_half=hps.train.fp16_run,
         )
-    if torch.cuda.is_available():
-        net_g = net_g.cuda(rank)
+    net_g = net_g.to(device)
     net_d = MultiPeriodDiscriminator(hps.model.use_spectral_norm)
-    if torch.cuda.is_available():
-        net_d = net_d.cuda(rank)
+    net_d = net_d.to(device)
     optim_g = torch.optim.AdamW(
         net_g.parameters(),
         hps.train.learning_rate,
@@ -201,7 +221,7 @@ def run(rank, n_gpus, hps, logger: logging.Logger):
     elif torch.cuda.is_available():
         net_g = DDP(net_g, device_ids=[rank])
         net_d = DDP(net_d, device_ids=[rank])
-    else:
+    elif device.type == "cpu":
         net_g = DDP(net_g)
         net_d = DDP(net_d)
 
@@ -267,6 +287,7 @@ def run(rank, n_gpus, hps, logger: logging.Logger):
         if rank == 0:
             train_and_evaluate(
                 rank,
+                device,
                 epoch,
                 hps,
                 [net_g, net_d],
@@ -297,7 +318,7 @@ def run(rank, n_gpus, hps, logger: logging.Logger):
 
 
 def train_and_evaluate(
-    rank, epoch, hps, nets, optims, schedulers, scaler, loaders, logger, writers, cache
+    rank, device, epoch, hps, nets, optims, schedulers, scaler, loaders, logger, writers, cache
 ):
     net_g, net_d = nets
     optim_g, optim_d = optims
@@ -341,18 +362,54 @@ def train_and_evaluate(
                         wave_lengths,
                         sid,
                     ) = info
-                # Load on CUDA
-                if torch.cuda.is_available():
-                    phone = phone.cuda(rank, non_blocking=True)
-                    phone_lengths = phone_lengths.cuda(rank, non_blocking=True)
+                # Load on accelerator when available.
+                if device.type != "cpu":
                     if hps.if_f0 == 1:
-                        pitch = pitch.cuda(rank, non_blocking=True)
-                        pitchf = pitchf.cuda(rank, non_blocking=True)
-                    sid = sid.cuda(rank, non_blocking=True)
-                    spec = spec.cuda(rank, non_blocking=True)
-                    spec_lengths = spec_lengths.cuda(rank, non_blocking=True)
-                    wave = wave.cuda(rank, non_blocking=True)
-                    wave_lengths = wave_lengths.cuda(rank, non_blocking=True)
+                        (
+                            phone,
+                            phone_lengths,
+                            pitch,
+                            pitchf,
+                            spec,
+                            spec_lengths,
+                            wave,
+                            wave_lengths,
+                            sid,
+                        ) = move_batch_to_device(
+                            (
+                                phone,
+                                phone_lengths,
+                                pitch,
+                                pitchf,
+                                spec,
+                                spec_lengths,
+                                wave,
+                                wave_lengths,
+                                sid,
+                            ),
+                            device,
+                        )
+                    else:
+                        (
+                            phone,
+                            phone_lengths,
+                            spec,
+                            spec_lengths,
+                            wave,
+                            wave_lengths,
+                            sid,
+                        ) = move_batch_to_device(
+                            (
+                                phone,
+                                phone_lengths,
+                                spec,
+                                spec_lengths,
+                                wave,
+                                wave_lengths,
+                                sid,
+                            ),
+                            device,
+                        )
                 # Cache on list
                 if hps.if_f0 == 1:
                     cache.append(
@@ -412,18 +469,54 @@ def train_and_evaluate(
             ) = info
         else:
             phone, phone_lengths, spec, spec_lengths, wave, wave_lengths, sid = info
-        ## Load on CUDA
-        if (hps.if_cache_data_in_gpu == False) and torch.cuda.is_available():
-            phone = phone.cuda(rank, non_blocking=True)
-            phone_lengths = phone_lengths.cuda(rank, non_blocking=True)
+        ## Load on accelerator when available.
+        if (hps.if_cache_data_in_gpu == False) and device.type != "cpu":
             if hps.if_f0 == 1:
-                pitch = pitch.cuda(rank, non_blocking=True)
-                pitchf = pitchf.cuda(rank, non_blocking=True)
-            sid = sid.cuda(rank, non_blocking=True)
-            spec = spec.cuda(rank, non_blocking=True)
-            spec_lengths = spec_lengths.cuda(rank, non_blocking=True)
-            wave = wave.cuda(rank, non_blocking=True)
-            # wave_lengths = wave_lengths.cuda(rank, non_blocking=True)
+                (
+                    phone,
+                    phone_lengths,
+                    pitch,
+                    pitchf,
+                    spec,
+                    spec_lengths,
+                    wave,
+                    wave_lengths,
+                    sid,
+                ) = move_batch_to_device(
+                    (
+                        phone,
+                        phone_lengths,
+                        pitch,
+                        pitchf,
+                        spec,
+                        spec_lengths,
+                        wave,
+                        wave_lengths,
+                        sid,
+                    ),
+                    device,
+                )
+            else:
+                (
+                    phone,
+                    phone_lengths,
+                    spec,
+                    spec_lengths,
+                    wave,
+                    wave_lengths,
+                    sid,
+                ) = move_batch_to_device(
+                    (
+                        phone,
+                        phone_lengths,
+                        spec,
+                        spec_lengths,
+                        wave,
+                        wave_lengths,
+                        sid,
+                    ),
+                    device,
+                )
 
         # Calculate
         with autocast(enabled=hps.train.fp16_run):

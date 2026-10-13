@@ -36,7 +36,7 @@ _Entry points, important modules, config, secrets location (not values)._
 - **Project:** `Retrieval-based-Voice-Conversion-WebUI`
 - **Branch:** `main`
 - **Last updated:** 2026-10-13 17:31:51 -03
-- **Built on commit:** 7ef1986 — Add warnings for files related to Onnx exports (#2385) (Ναρουσέ·μ·γιουμεμί·Χινακάννα, 2024-11-24)
+- **Built on commit:** a09f70a — fix(train): use buffer_rgba for matplotlib 3.8+ plots (Jonathan Carbiere, 2026-10-13)
 - **README says:** <div align="center">
 
 ## How to build / run / test
@@ -68,6 +68,7 @@ _Entry points, important modules, config, secrets location (not values)._
 - go-web-dml.bat
 - go-web.bat
 - gui_v1.py
+- HANDOFF.md
 - i18n/
 - infer-web.py
 - infer/
@@ -93,7 +94,7 @@ _Entry points, important modules, config, secrets location (not values)._
 
 - .py — 86 file(s)
 - .json — 43 file(s)
-- .md — 36 file(s)
+- .md — 37 file(s)
 - .yml — 7 file(s)
 - .txt — 7 file(s)
 - .bat — 5 file(s)
@@ -106,10 +107,11 @@ _Entry points, important modules, config, secrets location (not values)._
 
 ## Changes in this commit
 
-- M	infer/lib/train/utils.py
+- M	infer/modules/train/train.py
 
 ## Recent history
 
+- a09f70a fix(train): use buffer_rgba for matplotlib 3.8+ plots _(Jonathan Carbiere, 2026-10-13)_
 - 7ef1986 Add warnings for files related to Onnx exports (#2385) _(Ναρουσέ·μ·γιουμεμί·Χινακάννα, 2024-11-24)_
 - 709bbba optimize nsf inference (#2387) _(yxlllc, 2024-11-24)_
 - 1376ce7 Fix onnx export & Support TensorRT (#2384) _(Ναρουσέ·μ·γιουμεμί·Χινακάννα, 2024-11-24)_
@@ -119,6 +121,5 @@ _Entry points, important modules, config, secrets location (not values)._
 - e954fa9 Update requirements-win-for-realtime_vc_gui.txt _(RVC-Boss, 2024-09-05)_
 - cfc1e24 fix: dlmodels.sh exits after download single file (#2175) _(Coming, 2024-08-28)_
 - b405aed Translate Chinese text in English README (#2172) _(Dafterfly, 2024-08-28)_
-- 7e3965c Update requirements.txt (#2203) _(pato-pan, 2024-08-28)_
 
 <!-- HANDOFF:AUTO:END -->
